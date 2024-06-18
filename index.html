@@ -26,6 +26,70 @@
       integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
       crossorigin="anonymous"
     ></script>
+
+    <style>
+    body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .switch-container {
+        position: absolute;
+        top: 75%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #05c46b;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+  </style>
   </head>
 
   <body>
@@ -88,6 +152,15 @@
       </div>
     </div>
 
+    <div class="switch-container">
+    <h2>Control Pump</h2>
+    <label class="switch">
+        <input type="checkbox" id="pumpSwitch">
+        <span class="slider"></span>
+    </label>
+    </div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
       function getData() {
         fetch("/data")
@@ -110,6 +183,23 @@
 
       getData();
       setInterval(getData);
+
+      document.addEventListener('DOMContentLoaded', (event) => {
+      const client = mqtt.connect('wss://test.mosquitto.org:8081');
+
+      client.on('connect', () => {
+          console.log('Connected to MQTT broker');
+      });
+  
+      client.on('error', (err) => {
+          console.error('Connection error: ', err);
+      });
+  
+      document.getElementById('pumpSwitch').addEventListener('change', function () {
+          var state = this.checked ? 'ON' : 'OFF';
+          client.publish('control/pump', state);
+        });
+    });
     </script>
   </body>
 </html>
