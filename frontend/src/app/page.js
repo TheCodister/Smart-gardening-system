@@ -118,7 +118,7 @@ export default function Home() {
           />
           <span
             className={`slider round bg-gray-300 block w-14 h-8 rounded-full relative cursor-pointer ${
-              pumpState ? "bg-blue-400" : ""
+              pumpState ? "bg-green-500" : ""
             }`}
           >
             <span
