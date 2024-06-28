@@ -116,7 +116,11 @@ export default function Home() {
             onChange={handlePumpSwitch}
             className="hidden"
           />
-          <span className="slider round bg-gray-300 block w-14 h-8 rounded-full relative cursor-pointer">
+          <span
+            className={`slider round bg-gray-300 block w-14 h-8 rounded-full relative cursor-pointer ${
+              pumpState ? "bg-blue-400" : ""
+            }`}
+          >
             <span
               className={`absolute bg-white w-6 h-6 rounded-full top-1 left-1 transition-transform ${
                 pumpState ? "transform translate-x-6" : ""
