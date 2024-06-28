@@ -11,7 +11,9 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("http://localhost:3005/data");
+      const response = await fetch(
+        "https://smart-gardening-system.onrender.com/data"
+      );
       const data = await response.json();
       setAirHumidity(data.airHumidity);
       setSoilHumidity(data.soilHumidity);
