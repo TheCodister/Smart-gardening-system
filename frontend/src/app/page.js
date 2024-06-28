@@ -8,7 +8,10 @@ export default function Home() {
   const [temperature, setTemperature] = useState("--");
   const [lightLevel, setLightLevel] = useState("--");
   const [pumpState, setPumpState] = useState(false);
-  const [temperatureChange, setTemperatureChange] = useState({ line1: 'Change vs 1hr ago:', line2: '-- (was -- °C)' });
+  const [temperatureChange, setTemperatureChange] = useState({
+    line1: "Change vs 1hr ago:",
+    line2: "-- (was -- °C)",
+  });
 
   const temperatureHistoryRef = useRef([]);
   const currentTemperatureRef = useRef("--");
@@ -25,8 +28,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       const response = await fetch(
-        "http://localhost:3005/data"
-        // "https://smart-gardening-system.onrender.com/data"
+        "https://smart-gardening-system.onrender.com/data"
       );
       const data = await response.json();
       setAirHumidity(data.airHumidity);
@@ -47,24 +49,28 @@ export default function Home() {
       );
 
       if (prevTemperatureData) {
-        const tempChange = currentTemperatureRef.current - prevTemperatureData.temperature;
+        const tempChange =
+          currentTemperatureRef.current - prevTemperatureData.temperature;
         const tempChangeSign = tempChange > 0 ? "+" : "";
-        
+
         setTemperatureChange({
-          line1: 'Change vs 1hr ago:',
-          line2: `${tempChangeSign}${tempChange} °C (was ${prevTemperatureData.temperature} °C)`
+          line1: "Change vs 1hr ago:",
+          line2: `${tempChangeSign}${tempChange} °C (was ${prevTemperatureData.temperature} °C)`,
         });
 
         prevTemperatureRef.current = prevTemperatureData.temperature;
       } else {
         setTemperatureChange({
-          line1: 'Change vs 1hr ago:',
-          line2: `-- (was ${prevTemperatureRef.current} °C)`
+          line1: "Change vs 1hr ago:",
+          line2: `-- (was ${prevTemperatureRef.current} °C)`,
         });
       }
 
       // Store the current temperature for the next hour
-      storeTemperatureData(currentTemperatureRef.current, currentTimeRef.current);
+      storeTemperatureData(
+        currentTemperatureRef.current,
+        currentTimeRef.current
+      );
 
       setLightLevel(data.light);
     }
