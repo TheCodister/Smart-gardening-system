@@ -9,6 +9,7 @@ const client = mqtt.connect("mqtt://test.mosquitto.org", {
 });
 
 const app = express();
+const PORT = process.env.PORT || 3005;
 app.use(cors());
 
 const appData = {
@@ -55,6 +56,6 @@ app.post("/control/pump", (req, res) => {
   res.send({ success: true });
 });
 
-app.listen(3005, () => {
+app.listen(PORT, () => {
   console.log("Server started on port 3005");
 });
