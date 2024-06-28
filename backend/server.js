@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3005;
 app.use(cors());
 
 const appData = {
-  temperature: 0,
+  temperature: 31,
   airHumidity: 0,
   soilHumidity: 0,
   light: 0,

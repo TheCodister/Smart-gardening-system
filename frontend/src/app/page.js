@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import mqtt from "mqtt";
 
 export default function Home() {
@@ -8,21 +8,69 @@ export default function Home() {
   const [temperature, setTemperature] = useState("--");
   const [lightLevel, setLightLevel] = useState("--");
   const [pumpState, setPumpState] = useState(false);
+  const [temperatureChange, setTemperatureChange] = useState({ line1: 'Change vs 1hr ago:', line2: '-- (was -- °C)' });
+
+  const temperatureHistoryRef = useRef([]);
+  const currentTemperatureRef = useRef("--");
+  const currentTimeRef = useRef("Loading...");
+  const prevTemperatureRef = useRef("--");
+
+  function storeTemperatureData(temperature, time) {
+    temperatureHistoryRef.current.push({ temperature, time });
+    if (temperatureHistoryRef.current.length > 24) {
+      temperatureHistoryRef.current.shift();
+    }
+  }
 
   useEffect(() => {
     async function fetchData() {
       const response = await fetch(
-        "https://smart-gardening-system.onrender.com/data"
+        "http://localhost:3005/data"
+        // "https://smart-gardening-system.onrender.com/data"
       );
       const data = await response.json();
       setAirHumidity(data.airHumidity);
       setSoilHumidity(data.soilHumidity);
-      setTemperature(data.temperature);
+
+      // Update temperature
+      currentTemperatureRef.current = data.temperature;
+      currentTimeRef.current = new Date().toLocaleTimeString();
+
+      setTemperature(String(currentTemperatureRef.current));
+
+      // Get the temperature from one hour ago
+      const oneHourAgo = new Date(
+        new Date().getTime() - 60000 // Get 1 minute to test
+      ).toLocaleTimeString();
+      const prevTemperatureData = temperatureHistoryRef.current.find(
+        (entry) => entry.time === oneHourAgo
+      );
+
+      if (prevTemperatureData) {
+        const tempChange = currentTemperatureRef.current - prevTemperatureData.temperature;
+        const tempChangeSign = tempChange > 0 ? "+" : "";
+        
+        setTemperatureChange({
+          line1: 'Change vs 1hr ago:',
+          line2: `${tempChangeSign}${tempChange} °C (was ${prevTemperatureData.temperature} °C)`
+        });
+
+        prevTemperatureRef.current = prevTemperatureData.temperature;
+      } else {
+        setTemperatureChange({
+          line1: 'Change vs 1hr ago:',
+          line2: `-- (was ${prevTemperatureRef.current} °C)`
+        });
+      }
+
+      // Store the current temperature for the next hour
+      storeTemperatureData(currentTemperatureRef.current, currentTimeRef.current);
+
       setLightLevel(data.light);
     }
 
     fetchData();
-    const interval = setInterval(fetchData, 1000);
+    const interval = setInterval(fetchData, 60000); // Fetch each minute
 
     const client = mqtt.connect("wss://test.mosquitto.org:8081");
 
@@ -34,7 +82,9 @@ export default function Home() {
       console.error("Connection error: ", err);
     });
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   const handlePumpSwitch = () => {
@@ -45,6 +95,7 @@ export default function Home() {
       state
     );
     setPumpState(!pumpState);
+    client.end(); // Properly clean up the MQTT client connection
   };
 
   return (
@@ -89,6 +140,10 @@ export default function Home() {
               </div>
               <div className="card-body text-center">
                 <h1 className="text-4xl">{temperature}</h1>
+                <div>
+                  <div>{temperatureChange.line1}</div>
+                  <div>{temperatureChange.line2}</div>
+                </div>
               </div>
             </div>
 
