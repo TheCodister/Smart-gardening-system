@@ -40,7 +40,10 @@ export default function Home() {
   const handlePumpSwitch = () => {
     const client = mqtt.connect("wss://test.mosquitto.org:8081");
     const state = pumpState ? "OFF" : "ON";
-    client.publish("control/pump", state);
+    client.publish(
+      "https://smart-gardening-system.onrender.com/control/pump",
+      state
+    );
     setPumpState(!pumpState);
   };
 
